@@ -7,6 +7,32 @@ class LongTextTrainer(Trainer):
         self.tearcher_model = teacher_model
         super(LongTextTrainer, self).__init__(*args, **kwargs)
 
+    def compute_loss(self, model, inputs, return_outputs=False):
+        """
+        How the loss is computed by Trainer. By default, all models return the loss in the first element.
+
+        Subclass and override for custom behavior.
+        """
+        if self.label_smoother is not None and "labels" in inputs:
+            labels = inputs.pop("labels")
+        else:
+            labels = None
+        
+        if self.tearcher_model is not None:
+            teacher_outputs = self.tearcher_model(**inputs)
+            inputs["teacher_outputs"] = teacher_outputs
+
+        outputs = model(**inputs)
+        # Save past state if it exists
+        # TODO: this needs to be fixed and made cleaner later.
+        if self.args.past_index >= 0:
+            self._past = outputs[self.args.past_index]
+
+        # We don't use .loss here since the model may return tuples instead of ModelOutput.
+        loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
+
+        return (loss, outputs) if return_outputs else loss
+
     def create_optimizer(self):
         """
         Setup the optimizer.

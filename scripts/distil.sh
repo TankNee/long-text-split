@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 while getopts "n:g:d:" opt
@@ -38,14 +37,17 @@ fi
 i=${RANK}
 
 MODEL_NAME="/workspace/models/bert-base-chinese"
+MODEL_NAME="/workspace/coderepo/long-text-split/output/longtext-v5"
 DATA_PATH=/workspace/coderepo/long-text-split/data/text/train.jsonl
 EVAL_DATA_PATH=/workspace/coderepo/long-text-split/data/text/test.jsonl
 
 torchrun --nnodes ${num_machines} --nproc_per_node ${gpus_per_node} --node_rank ${RANK} --master_port ${MASTER_PORT} --master_addr ${MASTER_ADDR} longtext/main.py \
   --model_name_or_path $MODEL_NAME \
+  --teacher_model_path $MODEL_NAME \
   --data_path "$DATA_PATH" \
   --eval_data_path "$EVAL_DATA_PATH" \
-  --output_dir output/longtext-v6 \
+  --model_type "distil_bert" \
+  --output_dir output/longtext-distil-v1 \
   --num_train_epoch 2 \
   --per_device_train_batch_size 4 \
   --per_device_eval_batch_size 16 \

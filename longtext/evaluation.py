@@ -19,7 +19,7 @@ def eval_model(model, eval_dataset):
         outputs = model(**batch)
 
         y_true.extend(batch["labels"][batch["labels"] != -100].cpu().tolist())
-        logits = outputs[-1]
+        logits = outputs[1]
         pred = torch.softmax(logits, dim=-1)
         pred = torch.argmax(pred, dim=-1)
         y_pred.extend(pred.cpu().tolist())

@@ -43,8 +43,6 @@ class ModelArguments:
     model_name_or_path: str = "bert-base-chinese"
     model_type: str = "bert"
     teacher_model_type: str = "bert"  # bert or distilbert
-    feature_type: str = "head_tail"  # head and tail sentence combined feature.
-    pooling_type: str = "sub"  # add or sub or head_only
     num_distil_layers: int = 6  # layer number of distillation model
     teacher_model_path: str = None  # path of teacher model
 
@@ -66,8 +64,6 @@ def load_teacher_model(model_args, data_args):
         model_args.teacher_model_type
     ]
     config = config_class.from_pretrained(model_args.teacher_model_path)
-    config.feature_type = model_args.feature_type
-    config.pooling_type = model_args.pooling_type
 
     tokenizer = tokenizer_class.from_pretrained(model_args.teacher_model_path)
 
@@ -80,6 +76,10 @@ def load_teacher_model(model_args, data_args):
         param.requires_grad = False
 
     logger.info("Load teacher model from %s" % model_args.teacher_model_path)
+
+    model.eval()
+    model.cuda()
+    
     return model
 
 
@@ -105,8 +105,6 @@ def train():
     tokenizer = tokenizer_class.from_pretrained(model_args.model_name_or_path)
 
     config = config_class.from_pretrained(model_args.model_name_or_path)
-    config.feature_type = model_args.feature_type
-    config.pooling_type = model_args.pooling_type
     config.seperator_token_id = tokenizer.convert_tokens_to_ids("[unused1]")
 
     if training_args.do_distil:

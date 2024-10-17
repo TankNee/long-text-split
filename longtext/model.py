@@ -1,4 +1,5 @@
 import torch
+
 # from flash_attn.models.bert import BertModel
 from transformers import BertConfig, BertModel, BertPreTrainedModel
 
@@ -20,7 +21,9 @@ class LongTextBertModel(BertPreTrainedModel):
         cls_feature = hidden_states[:, 0, :]
         sep_feature = hidden_states[input_ids == self.tokenizer.sep_token_id]
 
-        global_feature = torch.max(torch.sub(cls_feature, sep_feature), dim=0, keepdim=False)[0]
+        global_feature = torch.max(
+            torch.sub(cls_feature, sep_feature), dim=0, keepdim=False
+        )[0]
         line_feature = hidden_states[input_ids == self.config.seperator_token_id]
         global_feature = global_feature.repeat(line_feature.size(0), 1)
 
@@ -30,14 +33,19 @@ class LongTextBertModel(BertPreTrainedModel):
         return feature
 
     def forward(self, input_ids, attention_mask=None, labels=None):
-        outputs = self.bert(input_ids, attention_mask=attention_mask, return_dict=False)
+        outputs = self.bert(
+            input_ids,
+            attention_mask=attention_mask,
+            return_dict=False,
+            output_hidden_states=True,
+        )
 
         hidden_states = outputs[0]
-        
+
         feature = self.create_feature(input_ids, hidden_states)
         logits = self.classifier(feature)
 
-        outputs = (logits,)
+        outputs = (logits,) + outputs[2:]
         if labels is not None:
             loss_fct = torch.nn.CrossEntropyLoss(ignore_index=-100)
 
