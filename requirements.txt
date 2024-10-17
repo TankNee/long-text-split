@@ -1,0 +1,8 @@
+debugpy==1.8.5
+loguru==0.7.2
+neetils==1.0.3
+pandas==2.2.3
+scikit_learn==1.5.2
+torch==2.4.1+cu124
+tqdm==4.66.5
+transformers==4.44.2
