@@ -8,7 +8,7 @@ class LongTextBertModel(BertPreTrainedModel):
     def __init__(self, config: BertConfig):
         super(LongTextBertModel, self).__init__(config)
         self.bert = BertModel(config)
-        self.classifier = torch.nn.Linear(config.hidden_size, 2)
+        self.sep_classifier = torch.nn.Linear(config.hidden_size, 2)
         self.ffn = torch.nn.Sequential(
             torch.nn.Linear(config.hidden_size * 2, config.hidden_size),
             torch.nn.ReLU(),
@@ -43,7 +43,7 @@ class LongTextBertModel(BertPreTrainedModel):
         hidden_states = outputs[0]
 
         feature = self.create_feature(input_ids, hidden_states)
-        logits = self.classifier(feature)
+        logits = self.sep_classifier(feature)
 
         outputs = (logits,) + outputs[2:]
         if labels is not None:

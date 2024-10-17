@@ -47,7 +47,7 @@ torchrun --nnodes ${num_machines} --nproc_per_node ${gpus_per_node} --node_rank 
   --data_path "$DATA_PATH" \
   --eval_data_path "$EVAL_DATA_PATH" \
   --model_type "distil_bert" \
-  --output_dir output/longtext-distil-v1 \
+  --output_dir output/longtext-distil-v2 \
   --num_train_epoch 2 \
   --per_device_train_batch_size 4 \
   --per_device_eval_batch_size 16 \
@@ -60,6 +60,7 @@ torchrun --nnodes ${num_machines} --nproc_per_node ${gpus_per_node} --node_rank 
   --weight_decay 0.1 \
   --adam_beta2 0.98 \
   --warmup_ratio 0.01 \
+  --distil_temperature 0.6 \
   --lr_scheduler_type "cosine" \
   --logging_steps 5 \
   --report_to "none" \

@@ -19,7 +19,7 @@ class LongTextDistilBertModel(LongTextBertModel):
         hidden_states = outputs[0]
 
         feature = self.create_feature(input_ids, hidden_states)
-        logits = self.classifier(feature)
+        logits = self.sep_classifier(feature)
 
         outputs = (logits,) + outputs[2:]
         if labels is not None:
@@ -35,7 +35,7 @@ class LongTextDistilBertModel(LongTextBertModel):
 
                 teacher_logits = teacher_outputs[1]
                 logits_loss = mse_loss_fct(logits, teacher_logits)
-                loss += logits_loss
+                loss += self.config.temperature * logits_loss
 
                 teacher_hidden_states = teacher_outputs[2]
                 hidden_states = outputs[1]
@@ -44,7 +44,7 @@ class LongTextDistilBertModel(LongTextBertModel):
                     hidden_state_loss = mse_loss_fct(
                         hidden_state, teacher_hidden_states[idx * 2]
                     )
-                    loss += hidden_state_loss
+                    loss += self.config.temperature * hidden_state_loss
 
             outputs = (loss,) + outputs
 

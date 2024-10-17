@@ -79,7 +79,7 @@ def load_teacher_model(model_args, data_args):
 
     model.eval()
     model.cuda()
-    
+
     return model
 
 
@@ -109,6 +109,7 @@ def train():
 
     if training_args.do_distil:
         config.num_hidden_layers = model_args.num_distil_layers
+        config.temperature = training_args.distil_temperature
 
     model = model_class.from_pretrained(model_args.model_name_or_path, config=config)
 
