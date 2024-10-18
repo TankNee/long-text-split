@@ -1,7 +1,6 @@
 import torch
-
-# from flash_attn.models.bert import BertModel
-from transformers import BertConfig, BertModel, BertPreTrainedModel
+from loguru import logger
+from transformers import BertConfig, BertModel, BertPreTrainedModel, PreTrainedTokenizer
 
 
 class LongTextBertModel(BertPreTrainedModel):
@@ -57,3 +56,78 @@ class LongTextBertModel(BertPreTrainedModel):
             outputs = (loss,) + outputs
 
         return outputs
+
+    def predict(self, text: str, max_length: int = 512):
+        seperator = "\n"
+        if not text.endswith(seperator):
+            text += seperator
+
+        input_ids_list = [[]]
+        attention_mask_list = [[]]
+
+        for idx, line in enumerate(text.split(seperator)):
+            if idx == len(text.split(seperator)) - 1:
+                continue
+            inputs = self.tokenizer(line, add_special_tokens=False)
+            inputs["input_ids"] += [self.config.seperator_token_id]
+            inputs["attention_mask"] += [1]
+
+            if len(inputs["input_ids"]) + len(input_ids_list[-1]) + 2 > max_length:
+                # 1. padding the last chunk
+                input_ids_list[-1] = (
+                    [self.tokenizer.cls_token_id]
+                    + input_ids_list[-1]
+                    + [self.tokenizer.sep_token_id]
+                )
+                input_ids_list[-1] += [0] * (max_length - len(input_ids_list[-1]))
+                attention_mask_list[-1] += [1, 1] + [0] * (
+                    max_length - len(attention_mask_list[-1]) - 2
+                )
+
+                # 2. create a new chunk
+                input_ids_list.append([])
+                attention_mask_list.append([])
+
+                input_ids_list[-1].extend(inputs["input_ids"])
+                attention_mask_list[-1].extend(inputs["attention_mask"])
+            else:
+                input_ids_list[-1].extend(inputs["input_ids"])
+                attention_mask_list[-1].extend(inputs["attention_mask"])
+
+        # padding the last chunk
+        input_ids_list[-1] = (
+            [self.tokenizer.cls_token_id]
+            + input_ids_list[-1]
+            + [self.tokenizer.sep_token_id]
+        )
+        input_ids_list[-1] += [0] * (max_length - len(input_ids_list[-1]))
+        attention_mask_list[-1] += [1, 1] + [0] * (
+            max_length - len(attention_mask_list[-1]) - 2
+        )
+
+        input_ids = torch.tensor(input_ids_list, dtype=torch.long, device=self.device)
+        attention_mask = torch.tensor(
+            attention_mask_list, dtype=torch.long, device=self.device
+        )
+
+        outputs = self(input_ids=input_ids, attention_mask=attention_mask)
+        
+        logits = outputs[0]
+        pred = torch.softmax(logits, dim=-1)
+        pred = torch.argmax(pred, dim=-1)
+        pred = pred.cpu().tolist()
+        logger.debug(pred)
+
+        results = [""]
+        for idx, line in enumerate(text.split(seperator)):
+            if idx == len(text.split(seperator)) - 1:
+                continue
+            
+            if pred[idx] == 0:
+                results[-1] += line + seperator
+            else:
+                results[-1] += line + seperator
+                results.append("")
+        results = [r.strip() for r in results if r.strip()]
+        return results
+
