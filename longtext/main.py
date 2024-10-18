@@ -149,7 +149,6 @@ def train():
 
         trainer.save_model()
         trainer.tokenizer.save_pretrained(training_args.output_dir)
-        config.save_pretrained(training_args.output_dir)
         trainer.save_state()
         logger.info("Model saved to %s" % training_args.output_dir)
 

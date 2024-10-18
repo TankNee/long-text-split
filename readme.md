@@ -15,9 +15,9 @@
 2. 配置脚本，填写你的数据路径和模型路径
     1. 训练脚本run.sh
     2. 蒸馏脚本distil.sh
-3. 开始训练：bash scripts/run.sh -n 1 -g 1
+3. 开始训练：bash scripts/run.sh -n 1 -g 1（其中-n表示你有几台机器，-g表示每台机器有多少张卡，如果需要调试，可以加上-d 1。）
+4. 训练完成之后，启动web界面以展示效果：python longtext/web.py -m /path/to/model
 
-其中-n表示你有几台机器，-g表示每台机器有多少张卡，如果需要调试，可以加上-d 1。
 
 ## Data
 

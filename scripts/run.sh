@@ -38,20 +38,20 @@ fi
 i=${RANK}
 
 MODEL_NAME="/workspace/models/bert-base-chinese"
-DATA_PATH=/workspace/coderepo/long-text-split/data/text/train.jsonl
-EVAL_DATA_PATH=/workspace/coderepo/long-text-split/data/text/test.jsonl
+DATA_PATH=/workspace/coderepo/long-text-split/data/text/train_v3.jsonl
+EVAL_DATA_PATH=/workspace/coderepo/long-text-split/data/text/test_v3.jsonl
 
 torchrun --nnodes ${num_machines} --nproc_per_node ${gpus_per_node} --node_rank ${RANK} --master_port ${MASTER_PORT} --master_addr ${MASTER_ADDR} longtext/main.py \
   --model_name_or_path $MODEL_NAME \
   --data_path "$DATA_PATH" \
   --eval_data_path "$EVAL_DATA_PATH" \
-  --output_dir output/longtext-v6 \
+  --output_dir output/longtext-v7 \
   --num_train_epoch 2 \
-  --per_device_train_batch_size 4 \
+  --per_device_train_batch_size 2 \
   --per_device_eval_batch_size 16 \
   --gradient_accumulation_steps 8 \
   --eval_strategy "epoch" \
-  --save_strategy "steps" \
+  --save_strategy "no" \
   --save_steps 200 \
   --save_total_limit 1 \
   --learning_rate 3e-4 \

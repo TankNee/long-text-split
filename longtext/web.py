@@ -13,7 +13,7 @@ def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--model_path", "-m", type=str, default="longtext/model")
-    parser.add_argument("--test_case", "-tc", type=str, default="/workspace/coderepo/long-text-split/data/text/test_v2.jsonl")
+    parser.add_argument("--test_case", "-tc", type=str, default="test_v2.jsonl")
 
     return parser.parse_args()
 
